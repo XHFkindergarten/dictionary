@@ -3,15 +3,21 @@ const Router = require('koa-router');
 const router = new Router()
 // 引入配置
 const config = require('../config/default')
+// 引入axios
+const axios = require('axios')
 
 // 引入sequelize
 const sequelize = require('../mysql/sequelize')
+// 模糊查询组件
+const Op = require('sequelize').Op
 // 引入单词 Model
 const Words = require('../models/WordsModel')
 // 引入书 Model
 const Book = require('../models/BookModel')
 // 引入书-用户 Model
 const UserBook = require('../models/UserBookModel')
+// 引入单词表
+const Voc = require('../models/VocModel')
 
 /**
  * @router GET /word/getWord
@@ -110,6 +116,46 @@ router.post('/addBook', async ctx => {
   }).catch(err => {
     ctx.status = 400
   })
+})
+
+/**
+ * @router GET /word/searchWord
+ * @description 用户输入时获取搜索建议
+ * @params text
+ * @access public
+ */
+router.get('/searchWord', async ctx => {
+  const text = ctx.query.text
+  const words = await Words.findAll({
+    where: {
+      word: {
+        [Op.like]: `${text}%`
+      }
+    },
+    limit: 10,
+    offset: 0
+  })
+  ctx.status = 200
+  ctx.body = {
+    success: true,
+    words
+  }
+})
+
+/**
+ * @router GET /word/oneWord
+ * @description 查询单个单词全部信息
+ * @params word
+ * @access public 转发第三方金山词霸API
+ */
+router.get('/oneWord', async ctx => {
+  const word = ctx.query.word
+  const res = await axios.get('http://dict-co.iciba.com/api/dictionary.php?key=A3A8D4E818A2A0890BED5298B800C9EB&type=json&w='+word)
+  ctx.status = 200
+  ctx.body = {
+    success: true,
+    word: res.data
+  }
 })
 
 
