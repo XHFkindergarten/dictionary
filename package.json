@@ -12,6 +12,7 @@
     "axios": "^0.18.0",
     "debug": "^2.6.3",
     "ejs": "~2.3.3",
+    "fast-xml-parser": "^3.12.16",
     "koa": "^2.2.0",
     "koa-body": "^4.1.0",
     "koa-bodyparser": "^3.2.0",
@@ -24,7 +25,8 @@
     "koa-static": "^3.0.0",
     "koa-views": "^5.2.1",
     "mysql2": "^1.6.5",
-    "sequelize": "^5.8.6"
+    "sequelize": "^5.8.6",
+    "xml2js": "^0.4.19"
   },
   "devDependencies": {
     "nodemon": "^1.8.1"

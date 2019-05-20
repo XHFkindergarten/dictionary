@@ -3,8 +3,12 @@ const Router = require('koa-router');
 const router = new Router()
 // 引入配置
 const config = require('../config/default')
+// 引入wallpaper
+const wallpaper = require('../config/wallpaper')
 // 引入axios
 const axios = require('axios')
+// 引入xml处理包
+const fxp = require('fast-xml-parser')
 
 // 引入sequelize
 const sequelize = require('../mysql/sequelize')
@@ -18,6 +22,10 @@ const Book = require('../models/BookModel')
 const UserBook = require('../models/UserBookModel')
 // 引入单词表
 const Voc = require('../models/VocModel')
+// 引入Card Model
+const Card = require('../models/CardModel')
+// 引入BookVoc Model
+const BookVoc = require('../models/BookVocModel')
 
 /**
  * @router GET /word/getWord
@@ -150,14 +158,122 @@ router.get('/searchWord', async ctx => {
  */
 router.get('/oneWord', async ctx => {
   const word = ctx.query.word
-  const res = await axios.get('http://dict-co.iciba.com/api/dictionary.php?key=A3A8D4E818A2A0890BED5298B800C9EB&type=json&w='+word)
-  ctx.status = 200
+  const res = await axios.get('http://dict-co.iciba.com/api/dictionary.php?type=json&key=A3A8D4E818A2A0890BED5298B800C9EB&w='+word)
+  const wordInfo = res.data
+  // 获取例句
+  const res1 = await axios.get('http://dict-co.iciba.com/api/dictionary.php?type=xml&key=A3A8D4E818A2A0890BED5298B800C9EB&w='+word)
+  const xml2json = fxp.parse(res1.data)
+  const sentense = xml2json.dict.sent
+  // 例句只返回两条
+  wordInfo.sentense = sentense.slice(0,2)
+  wordInfo.sentense.forEach(sen => {
+    console.log(sen.orig)
+    sen.orig.replace(/&quot;/g, '"')
+  })
   ctx.body = {
     success: true,
-    word: res.data
+    word: wordInfo
   }
 })
 
+/**
+ * @router POST /word/addCard
+ * @description 添加个人卡片
+ * @params openId 用户openid
+ * @params isFree 是否是自定义卡片 0-自定义 1-单词卡片
+ * @params img 卡片图 可不传
+ * @params freeFront 自定义卡片前置内容 可不传
+ * @params freeBack 自定义卡片后置内容 可不传
+ * @params voc 单词 单词和自定义内容必须传一个
+ */
+router.post('/addCard', async ctx => {
+  const res = await sequelize.transaction(async t => {
+    const params = ctx.request.body
+    // 是否已背  0-待背 1-已背
+    const isOk = 0
+    // 默认背景图
+    if (!params.img) {
+      const rand = Math.floor(Math.random()*wallpaper.length)
+      params.img = wallpaper[rand]
+    }
+    const createdAt = new Date().getTime()
+    console.log(params)
+    const createCard = await Card.create({
+      ...params,
+      isOk,
+      createdAt,
+      remindAt: createdAt
+    }, t)
+    ctx.status = 200
+    ctx.body = {
+      msg: 'create card success',
+      success: true
+    }
+  }).catch(err => {
+    ctx.status = 400
+  })
+})
+
+/**
+ * @router GET /word/getMyCard
+ * @description 获取个人卡片
+ * @params openId 用户openId
+ */
+router.get('/getMyCard', async ctx => {
+  const openId = ctx.query.openId
+  const cards = await Card.findAll({
+    where: {
+      openId
+    }
+  })
+  ctx.status = 200
+  ctx.body = {
+    success: true,
+    cards
+  }
+})
+
+/**
+ * @router GET /word/getMyTask
+ * @description 获取个人需要背的卡片
+ * @params openId 用户openId
+ */
+router.get('/getMyTask', async ctx => {
+  const openId = ctx.query.openId
+  const cards = await Card.findAll({
+    where: {
+      openId,
+      isOk: 0
+    }
+  })
+  ctx.status = 200
+  ctx.body = {
+    success: true,
+    cards
+  }
+})
+
+/**
+ * @router GET /word/getVocGroup
+ * @description 生成一个单词组(20个)
+ * @params openId 用户openId
+ */
+router.get('/getVocGroup', async ctx => {
+  const openId = ctx.query.openId
+  const books = await UserBook.findAll({
+    where: {
+      openId
+    }
+  })
+  const rand = Math.floor(Math.random()*books.length)
+  const bookId = books[rand].bookId
+  const words = await BookVoc.findAll({
+    where: {
+      bookId
+    }
+  })
+  console.log(words)
+})
 
 
 module.exports = router.routes()
