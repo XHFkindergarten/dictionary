@@ -1,7 +1,7 @@
 const Sequelize = require('sequelize')
 const sequelize = require('../mysql/sequelize')
 
-const UserBook = sequelize.define('user_book', {
+const ScheduleRecord = sequelize.define('schedule_record', {
   id: {
     type: Sequelize.INTEGER,
     primaryKey: true
@@ -14,12 +14,17 @@ const UserBook = sequelize.define('user_book', {
     field: 'book_id',
     type: Sequelize.STRING(255)
   },
-  schedule: Sequelize.INTEGER
-}, {
+  date: Sequelize.STRING(30),
+  schedule: Sequelize.INTEGER,
+  createdAt: {
+    field: 'created_at',
+    type: Sequelize.BIGINT
+  }
+},{
   // 不要擅自添加时间戳属性
   timestamps: false,
   // 不要擅自将表名变为复数
   freezeTableName: true
-});
+})
 
-module.exports = UserBook
+module.exports = ScheduleRecord

@@ -15,6 +15,9 @@ const prdHost = '35.241.100.176:4000'
 // 直接使用host
 const host = process.env.NODE_ENV=='development'?devHost:prdHost
 
+// 一组单词的数量
+const groupSize = 20
+
 // 图片服务器
 const imgHost = ''
 
@@ -24,5 +27,6 @@ module.exports = {
   appSecret,
   database,
   host,
-  imgHost
+  imgHost,
+  groupSize
 }

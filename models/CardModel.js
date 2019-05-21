@@ -35,6 +35,10 @@ const Card = sequelize.define('card', {
   remindAt: {
     field: 'remind_at',
     type: Sequelize.BIGINT
+  },
+  nextGap: {
+    field: 'next_gap',
+    type: Sequelize.INTEGER
   }
 },{
   // 不要擅自添加时间戳属性

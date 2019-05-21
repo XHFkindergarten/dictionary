@@ -3,12 +3,18 @@ const Router = require('koa-router');
 const router = new Router()
 // 引入配置
 const config = require('../config/default')
+// 引入定时时间配置
+const timeGap = require('../config/timeGap')
+// 引入tool
+const tools = require('../utils/tools')
 // 引入wallpaper
 const wallpaper = require('../config/wallpaper')
 // 引入axios
 const axios = require('axios')
 // 引入xml处理包
 const fxp = require('fast-xml-parser')
+// 引入定时组件
+const NodeSchedule = require('node-schedule')
 
 // 引入sequelize
 const sequelize = require('../mysql/sequelize')
@@ -16,6 +22,8 @@ const sequelize = require('../mysql/sequelize')
 const Op = require('sequelize').Op
 // 引入单词 Model
 const Words = require('../models/WordsModel')
+// 引入用户 Model
+const User = require('../models/UserModel')
 // 引入书 Model
 const Book = require('../models/BookModel')
 // 引入书-用户 Model
@@ -26,6 +34,8 @@ const Voc = require('../models/VocModel')
 const Card = require('../models/CardModel')
 // 引入BookVoc Model
 const BookVoc = require('../models/BookVocModel')
+// 引入进度记录表 Model
+const ScheduleRecord = require('../models/ScheduleRecordModel')
 
 /**
  * @router GET /word/getWord
@@ -101,21 +111,40 @@ router.get('/getBookList', async ctx => {
  */
 router.post('/addBook', async ctx => {
   const res = await sequelize.transaction(async t => {
-    const {openId, bookList} = ctx.request.body
-    console.log(ctx.request.body)
+    const {openId, bookList, selected} = ctx.request.body
     // 要添加学习的书籍首先需要把之前的所有书籍删除
     await UserBook.destroy({
       where: {
         openId
       }
     })
-    let res
+    // 修改用户的选书状态
+    const user = await User.findOne({
+      where: {
+        openId
+      },
+      t
+    })
+    await user.update({
+      selected
+    }, t)
+    console.log(bookList)
+    console.log(openId)
+    console.log(selected)
+    let res 
     bookList.forEach(async bookId => {
       res = await UserBook.create({
-        openId,
-        bookId
-      }, t)
-    });
+        bookId,
+        openId
+      })
+    })
+    // let res
+    // bookList.forEach(async bookId => {
+    //   res = await UserBook.create({
+    //     openId,
+    //     bookId
+    //   }, t)
+    // });
     ctx.status = 200
     ctx.body = {
       success: true,
@@ -166,10 +195,8 @@ router.get('/oneWord', async ctx => {
   const sentense = xml2json.dict.sent
   // 例句只返回两条
   wordInfo.sentense = sentense.slice(0,2)
-  wordInfo.sentense.forEach(sen => {
-    console.log(sen.orig)
-    sen.orig.replace(/&quot;/g, '"')
-  })
+  const rand = Math.floor(Math.random()*wallpaper.length)
+  wordInfo.labelImg=wallpaper[rand]
   ctx.body = {
     success: true,
     word: wordInfo
@@ -188,9 +215,29 @@ router.get('/oneWord', async ctx => {
  */
 router.post('/addCard', async ctx => {
   const res = await sequelize.transaction(async t => {
+    // 首先判断如果是单词卡片并且已经有这个单词，那么不添加
+    const {openId, isFree, voc} = ctx.request.body
+    if (isFree) {
+      const card = await Card.findAll({
+        where: {
+          openId,
+          voc
+        },
+        t
+      })
+      if (card.length>0) {
+        ctx.status = 200
+        ctx.body = {
+          success: false,
+          msg: '已经存在的卡片'
+        }
+        return
+      }
+    }
+
     const params = ctx.request.body
     // 是否已背  0-待背 1-已背
-    const isOk = 0
+    const isOk = 1
     // 默认背景图
     if (!params.img) {
       const rand = Math.floor(Math.random()*wallpaper.length)
@@ -204,6 +251,27 @@ router.post('/addCard', async ctx => {
       createdAt,
       remindAt: createdAt
     }, t)
+    // ctx.status = 200
+    // ctx.body = {
+    //   success: true
+    // }
+    // return
+    // 设置时间gap之后将状态修改为待背
+    // 由于是创建卡片，nextGap值自动为0(5分钟)
+    const timeSetting = tools.timeGapHandler(0)
+    console.log(timeSetting)
+    const j = NodeSchedule.scheduleJob(timeSetting, async function(createdAt) {
+      console.log('触发函数')
+      const thiscard = await Card.findOne({
+        where: {
+          createdAt
+        }
+      })
+      await thiscard.update({
+        isOk: 0
+      }, t)
+    }.bind(null, createdAt))
+
     ctx.status = 200
     ctx.body = {
       msg: 'create card success',
@@ -257,23 +325,156 @@ router.get('/getMyTask', async ctx => {
  * @router GET /word/getVocGroup
  * @description 生成一个单词组(20个)
  * @params openId 用户openId
+ * @access public
  */
 router.get('/getVocGroup', async ctx => {
   const openId = ctx.query.openId
-  const books = await UserBook.findAll({
+  const user = await User.findOne({
     where: {
       openId
     }
   })
-  const rand = Math.floor(Math.random()*books.length)
-  const bookId = books[rand].bookId
-  const words = await BookVoc.findAll({
+  console.log(Boolean(user.selected))
+  if (user.selected) {
+    console.log('here')
+    const books = await UserBook.findAll({
+      where: {
+        openId
+      }
+    })
+    // 取出第一本书的Id以及进度
+    const {bookId, schedule} = books[0]
+    //TODO 添加到进度记录表中
+    const time = new Date()
+    const date = `${time.getFullYear()}-${time.getMonth()+1}-${time.getDate()}`
+    // console.log('time', time.getTime())
+    // console.log('date', date)
+    // console.log('schedule', schedule)
+    const records = await ScheduleRecord.findAll({
+      where: {
+        openId,
+        bookId,
+        date,
+        schedule
+      }
+    })
+    if (records.length===0) {
+      const scheduleRecord = await ScheduleRecord.create({
+        openId,
+        bookId,
+        schedule,
+        date,
+        createdAt: time.getTime()
+      })
+    }
+
+    const words = await BookVoc.findAll({
+      where: {
+        bookId
+      },
+      limit: config.groupSize,
+      offset: schedule*config.groupSize,
+      include: {
+        model: Voc,
+        as: 'vocInfo'
+      }
+    })
+    const arr = []
+    words.forEach(word => {
+      arr.push(word.vocInfo)
+    })
+    ctx.status = 200
+    ctx.body = {
+      success: true,
+      bookId,
+      data: arr
+    }
+  } else {
+    // 用户没有选择参考书
+    // 从单词库的50000个单词中随机取20个单词
+    const rand = Math.floor(Math.random()*2400)
+    const arr = await Voc.findAll({
+      limit: config.groupSize,
+      offset: rand*config.groupSize
+    })
+    ctx.status = 200
+    ctx.body = {
+      success: true,
+      data: arr
+    }
+  }
+})
+
+/**
+ * @router POST /word/updateSchedule
+ * @description 完成了一个单词组更新当前图书的进度
+ * @params openId 用户openId
+ * @params bookId 图书Id
+ * @params num 默认为1 
+ * @access public
+ */
+router.post('/updateSchedule', async ctx => {
+  const res = await sequelize.transaction(async t => {
+    const {openId, bookId} = ctx.request.body
+    let num = ctx.request.body.num || 1
+    const userbook = await UserBook.findOne({
+      where: {
+        openId,
+        bookId
+      },
+      t
+    })
+    const up = await userbook.update({
+      schedule: userbook.schedule+num
+    }, t)
+    ctx.status = 200
+    ctx.body = {
+      success: true,
+      msg: 'update schedule success!'
+    }
+  }).catch(err => {
+    ctx.status = 400
+  })
+})
+
+/**
+ * @router GET /word/getVocRecords
+ * @description 获取今天背的单词
+ * @params openId
+ */
+router.get('/getVocRecords', async ctx => {
+  const openId = ctx.query.openId
+  let words = []
+  const time = new Date()
+  const date = `${time.getFullYear()}-${time.getMonth()+1}-${time.getDate()}`
+  const records = await ScheduleRecord.findAll({
     where: {
-      bookId
+      openId,
+      date
     }
   })
-  console.log(words)
+  for(let i=0;i<records.length;i++) {
+    const vocs = await BookVoc.findAll({
+      where: {
+        bookId: records[i].bookId
+      },
+      include: {
+        model: Voc,
+        as: 'vocInfo'
+      },
+      limit: config.groupSize,
+      offset: records[i].schedule*config.groupSize
+    })
+    words = words.concat(vocs)
+  }
+  ctx.status = 200
+  ctx.body = {
+    success: true,
+    words
+  }
 })
+
+
 
 
 module.exports = router.routes()

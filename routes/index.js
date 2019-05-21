@@ -34,7 +34,8 @@ router.post('/login', async ctx => {
       country: user.country,
       province: user.province,
       city: user.city,
-      avatarUrl: user.avatarUrl
+      avatarUrl: user.avatarUrl,
+      selected: user.selected
     }
     console.log(userInfo)
     ctx.status = 200

@@ -1,5 +1,6 @@
 const Sequelize = require('sequelize')
 const sequelize = require('../mysql/sequelize')
+const Voc = require('./VocModel')
 
 const BookVoc = sequelize.define('book_voc', {
   id: {
@@ -23,5 +24,11 @@ const BookVoc = sequelize.define('book_voc', {
   // 不要擅自将表名变为复数
   freezeTableName: true
 });
+
+// 联表查询
+BookVoc.belongsTo(Voc, {
+  foreignKey: 'vocId',
+  as: 'vocInfo'
+})
 
 module.exports = BookVoc

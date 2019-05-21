@@ -19,7 +19,8 @@ const User = sequelize.define('user', {
   createdAt: {
     field: 'created_at',
     type: Sequelize.BIGINT
-  }
+  },
+  selected: Sequelize.STRING(10)
 }, {
   // 不要擅自添加时间戳属性
   timestamps: false,

@@ -22,5 +22,11 @@ const wallpaper = [
   'http://img.xhfkindergarten.cn/IMG_8234.jpg',
   'http://img.xhfkindergarten.cn/IMG_8235.jpg'
 ]
-
-module.exports = wallpaper
+const wallpaper2 = [
+ 'http://img.xhfkindergarten.cn/kelly-sikkema-526104-unsplash_gaitubao_.jpg',
+ 'http://img.xhfkindergarten.cn/krys-amon-1223466-unsplash_gaitubao_.jpg',
+ 'http://img.xhfkindergarten.cn/jasmine-waheed-503135-unsplash_gaitubao_.jpg',
+ 'http://img.xhfkindergarten.cn/mat-reding-1196033-unsplash_gaitubao_.jpg',
+ 'http://img.xhfkindergarten.cn/mae-mu-1400633-unsplash_gaitubao_.jpg'
+]
+module.exports = wallpaper2
