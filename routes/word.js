@@ -515,6 +515,7 @@ router.post('/updateTimeGap', async ctx => {
       remindAt
     }, t)
 
+    
     const j = NodeSchedule.scheduleJob(timeSetting, async function(id) {
       const now = new Date()
       console.log('触发函数:'+now)
