@@ -129,26 +129,26 @@ router.get('/getQnToken', async ctx => {
   ctx.status = 400
 })
 
-router.get('/nodeschedule', async ctx => {
-  let time = new Date().getTime()
-  time += 60000
-  const newDate = new Date(time)
-  console.log('应该触发时间', newDate)
-  const year = newDate.getFullYear()
-  const month = newDate.getMonth()
-  const day = newDate.getDate()
-  const hour = newDate.getHours()
-  const minute = newDate.getMinutes()
-  const second = newDate.getSeconds()
-  const timeSetting = new Date(year, month, day, hour, minute, second)
-  const j = NodeSchedule.scheduleJob(timeSetting, async function() {
-    console.log('触发函数', new Date())
-  })
-  ctx.status = 200
-  ctx.body = {
-    success: true
-  }
-})
+// router.get('/nodeschedule', async ctx => {
+//   // let time = new Date().getTime()
+//   // time += 60000
+//   // const newDate = new Date(time)
+//   // console.log('应该触发时间', newDate)
+//   // const year = newDate.getFullYear()
+//   // const month = newDate.getMonth()
+//   // const day = newDate.getDate()
+//   // const hour = newDate.getHours()
+//   // const minute = newDate.getMinutes()
+//   // const second = newDate.getSeconds()
+//   // const timeSetting = new Date(year, month, day, hour, minute, second)
+//   const j = NodeSchedule.scheduleJob(timeSetting, async function() {
+//     console.log('触发函数', new Date())
+//   })
+//   ctx.status = 200
+//   ctx.body = {
+//     success: true
+//   }
+// })
 
 
 
