@@ -13,6 +13,7 @@ const fs = require('fs')
 /**
  * 引入SSL处理
  */
+// http请求会被强制转换http请求
 const enforceHttps = require('koa-sslify').default
 app.use(enforceHttps())
 var options = {
@@ -25,31 +26,26 @@ var options = {
  */
 
 var port = normalizePort(process.env.PORT || '4000');
-const httpPort = '4001'
+// const httpPort = '4001'
 // app.set('port', port);
 
 /**
  * Create HTTP server.
  */
 
-var server = http.createServer(app.callback());
-const httpServer = http.createServer(app.callback())
+var server = http.createServer(options, app.callback());
+// const httpServer = http.createServer(app.callback())
 
 /**
  * Listen on provided port, on all network interfaces.
  */
 
 server.listen(port, () => {
-  console.log(`KOA dictionary backend is listening on ${port}`)
+  console.log(`KOA dictionary(https) is listening on ${port}`)
 });
 server.on('error', onError);
 server.on('listening', onListening);
 
-httpServer.listen(httpPort, () => {
-  console.log(`KOA https is listening on ${httpPort}`)
-})
-httpServer.on('error', onError)
-httpServer.on('listening', onListening)
 
 /**
  * Normalize a port into a number, string, or false.
