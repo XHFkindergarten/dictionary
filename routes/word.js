@@ -4,7 +4,7 @@ const router = new Router()
 // 引入配置
 const config = require('../config/default')
 // 引入定时时间配置
-const timeGap = require('../config/timeGap')
+const timeMap = require('../config/timeMap')
 // 引入tool
 const tools = require('../utils/tools')
 // 引入wallpaper
@@ -234,7 +234,6 @@ router.post('/addCard', async ctx => {
         return
       }
     }
-
     const params = ctx.request.body
     // 是否已背  0-待背 1-已背
     const isOk = 1
@@ -258,10 +257,11 @@ router.post('/addCard', async ctx => {
     // return
     // 设置时间gap之后将状态修改为待背
     // 由于是创建卡片，nextGap值自动为0(5分钟)
-    const timeSetting = tools.timeGapHandler(0)
+    const {timeSetting, remindAt} = tools.timeGapHandler(0)
     console.log(timeSetting)
     const j = NodeSchedule.scheduleJob(timeSetting, async function(createdAt) {
-      console.log('触发函数')
+      const now = new Date()
+      console.log('触发函数:'+now)
       const thiscard = await Card.findOne({
         where: {
           createdAt
@@ -282,24 +282,25 @@ router.post('/addCard', async ctx => {
   })
 })
 
-/**
- * @router GET /word/getMyCard
- * @description 获取个人卡片
- * @params openId 用户openId
- */
-router.get('/getMyCard', async ctx => {
-  const openId = ctx.query.openId
-  const cards = await Card.findAll({
-    where: {
-      openId
-    }
-  })
-  ctx.status = 200
-  ctx.body = {
-    success: true,
-    cards
-  }
-})
+// 没用过，所以弃用
+// /**
+//  * @router GET /word/getMyCard
+//  * @description 获取个人卡片
+//  * @params openId 用户openId
+//  */
+// router.get('/getMyCard', async ctx => {
+//   const openId = ctx.query.openId
+//   const cards = await Card.findAll({
+//     where: {
+//       openId
+//     }
+//   })
+//   ctx.status = 200
+//   ctx.body = {
+//     success: true,
+//     cards
+//   }
+// })
 
 /**
  * @router GET /word/getMyTask
@@ -312,7 +313,11 @@ router.get('/getMyTask', async ctx => {
     where: {
       openId,
       isOk: 0
-    }
+    },
+    // 根据更新时间降序查找，最新的卡片在上面
+    order: [
+      ['remindAt', 'DESC']
+    ]
   })
   ctx.status = 200
   ctx.body = {
@@ -471,6 +476,89 @@ router.get('/getVocRecords', async ctx => {
   ctx.body = {
     success: true,
     words
+  }
+})
+
+/**
+ * @router POST /word/updateTimeGap
+ * @description 更新某张卡片的队列状态
+ * @params id 卡片id
+ * @params timeGap 提醒时间（可选）
+ */
+router.post('/updateTimeGap', async ctx => {
+  const res = await sequelize.transaction(async t => {
+    let {id, timeGap} = ctx.request.body
+    console.log('id', id)
+    console.log('接收到的timeGap', timeGap)
+    const card = await Card.findOne({
+      where: {
+        id
+      },
+      t
+    })
+    if (timeGap!=0&&!timeGap) {
+      timeGap = card.nextGap+1
+    } else if (timeGap === timeMap.length) {
+      timeGap--
+    }
+    
+    
+
+    console.log('timeGap', timeGap)
+    // 修改卡片已背，并且修改timeGap
+    const {timeSetting, remindAt} = tools.timeGapHandler(timeGap)
+
+    // 修改这张卡片的待背状态和提醒时间
+    const updateCard = await card.update({
+      nextGap: timeGap,
+      isOk: 1,
+      remindAt
+    }, t)
+
+    const j = NodeSchedule.scheduleJob(timeSetting, async function(id) {
+      const now = new Date()
+      console.log('触发函数:'+now)
+      const thiscard = await Card.findOne({
+        where: {
+          id
+        }
+      })
+      await thiscard.update({
+        isOk: 0
+      })
+    }.bind(null, id))
+
+    ctx.status = 200
+    ctx.body = {
+      success: true,
+      msg: 'update card success'
+    }
+  })
+})
+
+/**
+ * @router GET /word/getTaskNum
+ * @description 获取某个用户的记忆流数量
+ * @params openId
+ */
+router.get('/getTaskNum', async ctx => {
+  const openId = ctx.query.openId
+  const cardNum = await Card.count({
+    where: {
+      openId
+    }
+  })
+  const notOk = await Card.count({
+    where: {
+      openId,
+      isOk: 0
+    }
+  })
+  ctx.status = 200
+  ctx.body = {
+    success: true,
+    totalNum: cardNum,
+    taskNum: notOk
   }
 })
 
