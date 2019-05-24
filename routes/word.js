@@ -250,7 +250,7 @@ router.post('/addCard', async ctx => {
       ...params,
       isOk,
       createdAt,
-      remindAt: createdAt
+      remindAt: createdAt+timeMap[0]
     }, t)
     // ctx.status = 200
     // ctx.body = {

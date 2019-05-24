@@ -1,6 +1,7 @@
 const router = require('koa-router')()
 const User = require('../models/UserModel')
 const Word = require('../models/WordsModel')
+const Card = require('../models/CardModel')
 const config = require('../config/default')
 const WXB = require('../utils/WXBizDataCrypt')
 const axios = require('axios')
@@ -152,26 +153,40 @@ router.get('/wdnmd', async ctx => {
   }
 })
 
-// router.get('/nodeschedule', async ctx => {
-//   // let time = new Date().getTime()
-//   // time += 60000
-//   // const newDate = new Date(time)
-//   // console.log('应该触发时间', newDate)
-//   // const year = newDate.getFullYear()
-//   // const month = newDate.getMonth()
-//   // const day = newDate.getDate()
-//   // const hour = newDate.getHours()
-//   // const minute = newDate.getMinutes()
-//   // const second = newDate.getSeconds()
-//   // const timeSetting = new Date(year, month, day, hour, minute, second)
-//   const j = NodeSchedule.scheduleJob(timeSetting, async function() {
-//     console.log('触发函数', new Date())
-//   })
-//   ctx.status = 200
-//   ctx.body = {
-//     success: true
-//   }
-// })
+/**
+ * @router GET /mycard
+ * @params openId
+ * @description 获取用户的所有卡片以及倒计时时间
+ */
+router.get('/mycard', async ctx => {
+  const openId = ctx.query.openId
+  const cards = await Card.findAll({
+    where: {
+      openId
+    },
+    order: [
+      ['remindAt', 'DESC']
+    ]
+  })
+  const time = new Date().getTime()
+  const arr = []
+  cards.forEach(card => {
+    console.log(tools.timeCount(card.remindAt, time))
+    arr.push({
+      voc: card.voc,
+      img: card.img,
+      front: card.freeFront,
+      back: card.freeBack,
+      isFree: card.isFree,
+      countTime:tools.timeCount(card.remindAt, time)
+    })
+  })
+  ctx.status = 200
+  ctx.body = {
+    success: true,
+    cards: arr
+  }
+})
 
 
 
