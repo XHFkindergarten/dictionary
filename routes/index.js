@@ -129,6 +129,29 @@ router.get('/getQnToken', async ctx => {
   ctx.status = 400
 })
 
+/**
+ * @router GET /wdnmd
+ * @params openId
+ * @description 用户不想选书，就给他记录一下selectd
+ */
+router.get('/wdnmd', async ctx => {
+  const openId = ctx.query.openId
+  const user = await User.findOne({
+    where: {
+      openId
+    }
+  })
+  await user.update({
+    selected: 'WDNMD'
+  })
+  ctx.status = body 
+  ctx.body = {
+    success: true,
+    msg: 'wdnmd success',
+    userInfo: user
+  }
+})
+
 // router.get('/nodeschedule', async ctx => {
 //   // let time = new Date().getTime()
 //   // time += 60000

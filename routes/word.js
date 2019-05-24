@@ -36,6 +36,8 @@ const Card = require('../models/CardModel')
 const BookVoc = require('../models/BookVocModel')
 // 引入进度记录表 Model
 const ScheduleRecord = require('../models/ScheduleRecordModel')
+// 引入卡片记录表 Model
+const MemoryRecord = require('../models/MemoryRecord')
 
 /**
  * @router GET /word/getWord
@@ -502,8 +504,6 @@ router.post('/updateTimeGap', async ctx => {
       timeGap--
     }
     
-    
-
     console.log('timeGap', timeGap)
     // 修改卡片已背，并且修改timeGap
     const {timeSetting, remindAt} = tools.timeGapHandler(timeGap)
@@ -528,6 +528,28 @@ router.post('/updateTimeGap', async ctx => {
         isOk: 0
       })
     }.bind(null, id))
+
+    // 在memory_record记录表中更新今天使用卡片的数量
+    const openId = card.openId
+    const today = tools.formatToday()
+    const memoryRecord = await MemoryRecord.findOne({
+      where: {
+        date: today,
+        openId
+      },
+      t
+    })
+    if (memoryRecord) {
+      await memoryRecord.update({
+        num: memoryRecord.num+1
+      }, t)
+    } else {
+      await MemoryRecord.create({
+        openId,
+        date: today,
+        num: 1
+      })
+    }
 
     ctx.status = 200
     ctx.body = {
@@ -560,6 +582,66 @@ router.get('/getTaskNum', async ctx => {
     success: true,
     totalNum: cardNum,
     taskNum: notOk
+  }
+})
+
+/**
+ * @router GET /word/getToday
+ * @description 获取今天的卡片学习数量
+ * @params openId
+ */
+router.get('/getToday', async ctx => {
+  const openId = ctx.query.openId
+  const date = tools.formatToday()
+  const record = await MemoryRecord.findOne({
+    where: {
+      openId,
+      date
+    }
+  })
+  let num
+  if (record) {
+    num = record.num
+  } else {
+    num = 0
+  }
+  ctx.status = 200
+  ctx.body = {
+    success: true,
+    num,
+    msg: 'get Today success'
+  }
+})
+
+/**
+ * @router GET /word/addToday
+ * @description 增加今天学习过的卡片数量
+ * @params openId
+ */
+router.get('/addToday', async ctx => {
+  const openId = ctx.query.openId
+  const today = tools.formatToday()
+  const memoryRecord = await MemoryRecord.findOne({
+    where: {
+      date: today,
+      openId
+    }
+  })
+  if (memoryRecord) {
+    await memoryRecord.update({
+      num: memoryRecord.num+1
+    })
+  } else {
+    await MemoryRecord.create({
+      openId,
+      date: today,
+      num: 1
+    })
+  }
+  ctx.status = 200
+  ctx.body = {
+    success: true,
+    msg: 'add today success'
   }
 })
 

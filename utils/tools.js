@@ -12,19 +12,6 @@ const timeGapHandler = (index) => {
   const minute = newDate.getMinutes()
   const second = newDate.getSeconds()
   const timeSetting = new Date(year, month, day, hour, minute, second)
-
-  // const date0 = new Date().getTime()
-  // console.log('时间间隔'+timeMap[index]/(60*1000)+'min')
-  // const newTime = date0+timeMap[index]
-  // const date = new Date(newTime)
-  // console.log('应该触发时间' + date)
-  // const year = date.getFullYear()
-  // const month = date.getMonth()
-  // const day = date.getDate()
-  // const hour = date.getHours()
-  // const minute = date.getMinutes()
-  // const second = date.getSeconds()
-
   return {
     timeSetting,
     // 提醒时间bigint类型
@@ -32,6 +19,17 @@ const timeGapHandler = (index) => {
   }
 }
 
+/**
+ * 获取今天的时间格式
+ * fullYear-month-day
+ */
+const formatToday = () => {
+  const date = new Date()
+  const d = `${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()}`
+  return d
+} 
+
 module.exports = {
-  timeGapHandler
+  timeGapHandler,
+  formatToday
 }
