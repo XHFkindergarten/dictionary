@@ -460,6 +460,7 @@ router.get('/getVocRecords', async ctx => {
       date
     }
   })
+  
   for(let i=0;i<records.length;i++) {
     const vocs = await BookVoc.findAll({
       where: {

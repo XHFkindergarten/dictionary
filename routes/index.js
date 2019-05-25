@@ -2,6 +2,7 @@ const router = require('koa-router')()
 const User = require('../models/UserModel')
 const Word = require('../models/WordsModel')
 const Card = require('../models/CardModel')
+const PunchRecord = require('../models/PunchRecordModel')
 const config = require('../config/default')
 const WXB = require('../utils/WXBizDataCrypt')
 const axios = require('axios')
@@ -185,6 +186,48 @@ router.get('/mycard', async ctx => {
   ctx.body = {
     success: true,
     cards: arr
+  }
+})
+
+/**
+ * @router POST /punch
+ * @params openId
+ * @description 打卡
+ */
+router.get('/punch', async ctx => {
+  const openId = ctx.query.openId
+  const date = tools.formatToday()
+  const punchNum = await PunchRecord.count({
+    where: {
+      openId
+    }
+  })
+  const record = await PunchRecord.findOne({
+    where: {
+      openId,
+      date
+    }
+  })
+  if (record) {
+    // 如果今天已经打卡了
+    ctx.status = 200
+    ctx.body = {
+      success: true,
+      hasPunch: true,
+      punchNum
+    }
+    return
+  } else {
+    const create = await PunchRecord.create({
+      openId,
+      date
+    })
+    ctx.status = 200
+    ctx.body = {
+      success: true,
+      hasPunch: false,
+      punchNum: punchNum+1
+    }
   }
 })
 

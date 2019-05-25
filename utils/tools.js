@@ -39,11 +39,11 @@ const timeCount = (remindAt, now) => {
   } else if (count>1000&&count<60*1000) {
     return 'within 1 minute'
   } else if (count>60*1000&&count<60*60*1000) {
-    return `${Math.floor(count/(60*1000))}${count/(60*1000)!=1?'minutes':'minute'}`
+    return `within ${Math.floor(count/(60*1000))}${count/(60*1000)!=1?'minutes':'minute'}`
   } else if (count>60*60*1000&&count<24*60*60*1000) {
-    return `${Math.floor(count/(60*60*1000))}${count/(60*60*1000)!=1?'hours':'hour'}`
+    return `within ${Math.floor(count/(60*60*1000))}${count/(60*60*1000)!=1?'hours':'hour'}`
   } else if (count > 24*60*60*1000) {
-    return `${Math.floor(count/(24*60*60*1000))}${count/(24*60*60*1000)!=1?'days':'day'}`
+    return `within ${Math.floor(count/(24*60*60*1000))}${count/(24*60*60*1000)!=1?'days':'day'}`
   }
 }
 
