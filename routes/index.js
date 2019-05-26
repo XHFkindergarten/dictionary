@@ -82,6 +82,7 @@ router.post('/register', async ctx => {
     const user = await User.findOne({
       openId
     })
+    console.log('search user', user)
     if (user) {
       ctx.status = 200
       ctx.body = {
