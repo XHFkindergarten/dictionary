@@ -533,6 +533,8 @@ router.post('/updateTimeGap', async ctx => {
     // 在memory_record记录表中更新今天使用卡片的数量
     const openId = card.openId
     const today = tools.formatToday()
+    console.log('openId===', openId)
+    console.log('today', today)
     const memoryRecord = await MemoryRecord.findOne({
       where: {
         date: today,
