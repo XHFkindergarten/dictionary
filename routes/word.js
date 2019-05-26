@@ -204,7 +204,9 @@ router.get('/oneWord', async ctx => {
   const xml2json = fxp.parse(res1.data)
   const sentense = xml2json.dict.sent
   // 例句只返回两条
-  wordInfo.sentense = sentense.slice(0,2)
+  if (sentense) {
+    wordInfo.sentense = sentense.slice(0,2)
+  }
   const rand = Math.floor(Math.random()*wallpaper.length)
   wordInfo.labelImg=wallpaper[rand]
   ctx.body = {
