@@ -362,8 +362,7 @@ router.get('/getVocGroup', async ctx => {
     // 取出第一本书的Id以及进度
     const {bookId, schedule} = books[0]
     //TODO 添加到进度记录表中
-    const time = new Date()
-    const date = `${time.getFullYear()}-${time.getMonth()+1}-${time.getDate()}`
+    const date = tools.formatToday()
     // console.log('time', time.getTime())
     // console.log('date', date)
     // console.log('schedule', schedule)
@@ -462,8 +461,7 @@ router.post('/updateSchedule', async ctx => {
 router.get('/getVocRecords', async ctx => {
   const openId = ctx.query.openId
   let words = []
-  const time = new Date()
-  const date = `${time.getFullYear()}-${time.getMonth()+1}-${time.getDate()}`
+  const date = tools.formatToday()
   const records = await ScheduleRecord.findAll({
     where: {
       openId,

@@ -24,7 +24,9 @@ const timeGapHandler = (index) => {
  * fullYear-month-day
  */
 const formatToday = () => {
-  const date = new Date()
+  let time = new Date().getTime()
+  time += 8*60*60*1000
+  const date = new Date(time)
   const d = `${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()}`
   return d
 } 
