@@ -80,7 +80,9 @@ router.post('/register', async ctx => {
     const res = await axios.get(`https://api.weixin.qq.com/sns/jscode2session?appid=${config.appId}&secret=${config.appSecret}&js_code=${code}&grant_type=authorization_code`)
     const openId = res.data.openid
     const user = await User.findOne({
-      openId
+      where: {
+        openId
+      }
     })
     console.log('search user', user)
     if (user) {
