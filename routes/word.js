@@ -483,10 +483,18 @@ router.get('/getVocRecords', async ctx => {
     })
     words = words.concat(vocs)
   }
+
+  // 顺便返回用户选择的资料种类
+  const user = await User.findOne({
+    where: {
+      openId
+    }
+  })
   ctx.status = 200
   ctx.body = {
     success: true,
-    words
+    words,
+    typeName: user.selected
   }
 })
 
