@@ -146,7 +146,7 @@ router.get('/wdnmd', async ctx => {
   await user.update({
     selected: 'WDNMD'
   })
-  ctx.status = body 
+  ctx.status = 200
   ctx.body = {
     success: true,
     msg: 'wdnmd success',

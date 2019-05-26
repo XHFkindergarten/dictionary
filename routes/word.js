@@ -114,6 +114,14 @@ router.get('/getBookList', async ctx => {
 router.post('/addBook', async ctx => {
   const res = await sequelize.transaction(async t => {
     const {openId, bookList, selected} = ctx.request.body
+    if (bookList.length===0) {
+      ctx.status = 200
+      ctx.body = {
+        success: false,
+        msg: 'plz choose book'
+      }
+      return
+    }
     // 要添加学习的书籍首先需要把之前的所有书籍删除
     await UserBook.destroy({
       where: {
