@@ -79,23 +79,35 @@ router.post('/register', async ctx => {
     // 获取openid和sessionKey
     const res = await axios.get(`https://api.weixin.qq.com/sns/jscode2session?appid=${config.appId}&secret=${config.appSecret}&js_code=${code}&grant_type=authorization_code`)
     const openId = res.data.openid
-    const createUser = await User.create({
-      openId,
-      nickName,
-      gender,
-      city,
-      province,
-      country,
-      avatarUrl,
-      createdAt
-    }, t)
-    ctx.status = 200
-    ctx.body = {
-      success: true,
-      msg: 'register success',
+    const user = await User.findOne({
       openId
+    })
+    if (user) {
+      ctx.status = 200
+      ctx.body = {
+        success: true,
+        hasRegister: true
+      }
+      return
+    }else {
+      const createUser = await User.create({
+        openId,
+        nickName,
+        gender,
+        city,
+        province,
+        country,
+        avatarUrl,
+        createdAt
+      }, t)
+      ctx.status = 200
+      ctx.body = {
+        success: true,
+        hasRegister: false,
+        msg: 'register success',
+        openId
+      }
     }
-    return
   }).catch(() => {
     ctx.status = 400
   })
