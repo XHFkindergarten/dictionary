@@ -539,14 +539,15 @@ router.post('/updateTimeGap', async ctx => {
       where: {
         date: today,
         openId
-      },
-      t
+      }
     })
     if (memoryRecord) {
+      console.log('has record')
       await memoryRecord.update({
         num: memoryRecord.num+1
       }, t)
     } else {
+      console.log('create record')
       await MemoryRecord.create({
         openId,
         date: today,
