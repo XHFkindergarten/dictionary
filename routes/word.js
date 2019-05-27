@@ -363,9 +363,6 @@ router.get('/getVocGroup', async ctx => {
     const {bookId, schedule} = books[0]
     //TODO 添加到进度记录表中
     const date = tools.formatToday()
-    // console.log('time', time.getTime())
-    // console.log('date', date)
-    // console.log('schedule', schedule)
     const records = await ScheduleRecord.findAll({
       where: {
         openId,
@@ -380,7 +377,7 @@ router.get('/getVocGroup', async ctx => {
         bookId,
         schedule,
         date,
-        createdAt: time.getTime()
+        createdAt: new Date().getTime()
       })
     }
 
