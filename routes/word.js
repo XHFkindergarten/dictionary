@@ -221,6 +221,7 @@ router.get('/oneWord', async ctx => {
  * @params openId 用户openid
  * @params isFree 是否是自定义卡片 0-自定义 1-单词卡片
  * @params img 卡片图 可不传
+ * @params img2 卡片图 可不传
  * @params freeFront 自定义卡片前置内容 可不传
  * @params freeBack 自定义卡片后置内容 可不传
  * @params voc 单词 单词和自定义内容必须传一个
@@ -229,7 +230,7 @@ router.post('/addCard', async ctx => {
   const res = await sequelize.transaction(async t => {
     // 首先判断如果是单词卡片并且已经有这个单词，那么不添加
     const {openId, isFree, voc} = ctx.request.body
-    if (isFree) {
+    if (isFree===1) {
       const card = await Card.findAll({
         where: {
           openId,
@@ -262,6 +263,7 @@ router.post('/addCard', async ctx => {
       createdAt,
       remindAt: createdAt+timeMap[0]
     }, t)
+    console.log(createCard.id)
     // ctx.status = 200
     // ctx.body = {
     //   success: true
@@ -271,18 +273,18 @@ router.post('/addCard', async ctx => {
     // 由于是创建卡片，nextGap值自动为0(5分钟)
     const {timeSetting, remindAt} = tools.timeGapHandler(0)
     console.log(timeSetting)
-    const j = NodeSchedule.scheduleJob(timeSetting, async function(createdAt) {
+    const j = NodeSchedule.scheduleJob(timeSetting, async function(id) {
       const now = new Date()
       console.log('触发函数:'+now)
       const thiscard = await Card.findOne({
         where: {
-          createdAt
+          id
         }
       })
       await thiscard.update({
         isOk: 0
       }, t)
-    }.bind(null, createdAt))
+    }.bind(null, createCard.id))
 
     ctx.status = 200
     ctx.body = {

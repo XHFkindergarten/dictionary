@@ -4,7 +4,8 @@ const sequelize = require('../mysql/sequelize')
 const UserBook = sequelize.define('user_book', {
   id: {
     type: Sequelize.INTEGER,
-    primaryKey: true
+    primaryKey: true,
+    autoIncrement: true
   },
   openId: {
     field: 'open_id',
