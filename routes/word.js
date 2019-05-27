@@ -250,11 +250,12 @@ router.post('/addCard', async ctx => {
     const params = ctx.request.body
     // 是否已背  0-待背 1-已背
     const isOk = 1
-    // 默认背景图
-    if (!params.img) {
-      const rand = Math.floor(Math.random()*wallpaper.length)
-      params.img = wallpaper[rand]
-    }
+    // 目前默认可以不传背景图片
+    // // 默认背景图
+    // if (!params.img) {
+    //   const rand = Math.floor(Math.random()*wallpaper.length)
+    //   params.img = wallpaper[rand]
+    // }
     const createdAt = new Date().getTime()
     console.log(params)
     const createCard = await Card.create({
