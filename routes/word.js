@@ -695,6 +695,28 @@ router.get('/addToday', async ctx => {
   }
 })
 
+/**
+ * @router GET /word/OneCard
+ * @description 根据卡片id获取单张卡片的所有信息
+ * @params id
+ */
+router.get('/oneCard', async ctx => {
+  const id = ctx.query.id
+  const card = await Card.findOne({
+    where: {
+      id
+    }
+  })
+  if (!card) {
+    ctx.status = 400
+    return
+  }
+  ctx.status = 200
+  ctx.body = {
+    success: true,
+    card
+  }
+})
 
 
 
