@@ -460,6 +460,22 @@ router.post('/updateSchedule', async ctx => {
  */
 router.get('/getVocRecords', async ctx => {
   const openId = ctx.query.openId
+
+  // 判断用户是否选了书
+  const user = await User.findOne({
+    where: {
+      openId
+    }
+  })
+  if (!user.selected) {
+    ctx.status = 200
+    ctx.body = {
+      success: true,
+      notSelected: true
+    }
+    return
+  }
+
   let words = []
   const date = tools.formatToday()
   const records = await ScheduleRecord.findAll({
@@ -484,17 +500,13 @@ router.get('/getVocRecords', async ctx => {
     words = words.concat(vocs)
   }
 
-  // 顺便返回用户选择的资料种类
-  const user = await User.findOne({
-    where: {
-      openId
-    }
-  })
+  
   ctx.status = 200
   ctx.body = {
     success: true,
     words,
-    typeName: user.selected
+    typeName: user.selected,
+    notSelected: false
   }
 })
 
