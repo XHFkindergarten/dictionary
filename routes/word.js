@@ -725,7 +725,7 @@ router.get('/oneCard', async ctx => {
  */
 router.get('/deleteCard', async ctx => {
   const id = ctx.query.id
-  const res = await Card.delete({
+  const res = await Card.destroy({
     where: {
       id
     }
