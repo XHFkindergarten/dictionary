@@ -488,6 +488,7 @@ router.get('/getVocRecords', async ctx => {
   
   const records = await ScheduleRecord.findAll({
     where: {
+      bookId,
       openId,
       date
     }
