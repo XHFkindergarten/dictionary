@@ -354,9 +354,7 @@ router.get('/getVocGroup', async ctx => {
       openId
     }
   })
-  console.log(Boolean(user.selected))
   if (user.selected) {
-    console.log('here')
     const books = await UserBook.findAll({
       where: {
         openId
@@ -383,7 +381,8 @@ router.get('/getVocGroup', async ctx => {
         createdAt: new Date().getTime()
       })
     }
-
+    console.log('offset', schedule*config.groupSize)
+    console.log('limit', config.groupSize)
     const words = await BookVoc.findAll({
       where: {
         bookId
