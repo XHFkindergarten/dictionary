@@ -257,7 +257,7 @@ router.get('/updateCards', async ctx => {
     console.log('定期检查卡片状态')
     const cards = await Card.findAll()
     const time = new Date().getTime()
-    cards.forEach(card => {
+    cards.forEach(async card => {
       if (card.remindAt < time) {
         await card.update({
           isOk: 0
@@ -268,7 +268,7 @@ router.get('/updateCards', async ctx => {
     ctx.body = {
       success: true
     }
-  }
+  })
 })
 
 
