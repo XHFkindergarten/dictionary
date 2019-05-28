@@ -476,36 +476,69 @@ router.get('/getVocRecords', async ctx => {
     return
   }
 
-  let words = []
   const date = tools.formatToday()
+  // 查找用户的所有书
+  const books = await Book.findAll({
+    where: {
+      openId
+    }
+  })
+  // 获取第一本
+  const {bookId, schedule} = books[0]
+  
   const records = await ScheduleRecord.findAll({
     where: {
       openId,
       date
     }
   })
-  
-  for(let i=0;i<records.length;i++) {
+  if (records.length===0) {
+    const createRecords = await ScheduleRecord.create({
+      openId,
+      bookId,
+      schedule: 0,
+      date,
+      createdAt: new Date().getTime()
+    })
     const vocs = await BookVoc.findAll({
       where: {
-        bookId: records[i].bookId
+        bookId
       },
       include: {
         model: Voc,
         as: 'vocInfo'
       },
       limit: config.groupSize,
-      offset: records[i].schedule*config.groupSize
+      offset: 0
     })
-    words = words.concat(vocs)
-  }
-
-  
-  ctx.status = 200
-  ctx.body = {
-    success: true,
-    words,
-    typeName: user.selected
+    ctx.status = 200
+    ctx.body = {
+      success: true,
+      words: vocs,
+      typeName: user.selected
+    }
+  } else {
+    let words = []
+    for(let i=0;i<records.length;i++) {
+      const vocs = await BookVoc.findAll({
+        where: {
+          bookId: records[i].bookId
+        },
+        include: {
+          model: Voc,
+          as: 'vocInfo'
+        },
+        limit: config.groupSize,
+        offset: records[i].schedule*config.groupSize
+      })
+      words = words.concat(vocs)
+    }
+    ctx.status = 200
+    ctx.body = {
+      success: true,
+      words,
+      typeName: user.selected
+    }
   }
 })
 
