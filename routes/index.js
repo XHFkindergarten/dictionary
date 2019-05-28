@@ -189,6 +189,7 @@ router.get('/mycard', async ctx => {
   cards.forEach(card => {
     console.log(tools.timeCount(card.remindAt, time))
     arr.push({
+      id: card.id,
       voc: card.voc,
       img: card.img,
       title: card.title,
