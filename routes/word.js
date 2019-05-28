@@ -718,6 +718,24 @@ router.get('/oneCard', async ctx => {
   }
 })
 
+/**
+ * @router GET /word/deleteCard
+ * @description 根据Id删除某张卡片
+ * @params id
+ */
+router.get('/deleteCard', async ctx => {
+  const id = ctx.query.id
+  const res = await Card.delete({
+    where: {
+      id
+    }
+  })
+  ctx.status = 200
+  ctx.body = {
+    success: true
+  }
+})
+
 
 
 module.exports = router.routes()
