@@ -471,7 +471,8 @@ router.get('/getVocRecords', async ctx => {
     ctx.status = 200
     ctx.body = {
       success: true,
-      typeName: 'Null'
+      typeName: 'Null',
+      words: []
     }
     return
   }
