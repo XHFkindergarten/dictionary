@@ -21,6 +21,8 @@ const Card = sequelize.define('card', {
   },
   img: Sequelize.STRING(255),
   img2: Sequelize.STRING(255),
+  rec1: Sequelize.STRING(255),
+  rec2: Sequelize.STRING(255),
   freeFront: {
     field: 'free_front',
     type: Sequelize.TEXT
