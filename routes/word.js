@@ -478,7 +478,7 @@ router.get('/getVocRecords', async ctx => {
 
   const date = tools.formatToday()
   // 查找用户的所有书
-  const books = await Book.findAll({
+  const books = await UserBook.findAll({
     where: {
       openId
     }
