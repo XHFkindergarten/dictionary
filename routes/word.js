@@ -471,7 +471,7 @@ router.get('/getVocRecords', async ctx => {
     ctx.status = 200
     ctx.body = {
       success: true,
-      notSelected: true
+      typeName: 'Null'
     }
     return
   }
@@ -505,8 +505,7 @@ router.get('/getVocRecords', async ctx => {
   ctx.body = {
     success: true,
     words,
-    typeName: user.selected,
-    notSelected: false
+    typeName: user.selected
   }
 })
 
