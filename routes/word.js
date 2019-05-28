@@ -354,69 +354,54 @@ router.get('/getVocGroup', async ctx => {
       openId
     }
   })
-  if (user.selected) {
-    const books = await UserBook.findAll({
-      where: {
-        openId
-      }
-    })
-    // 取出第一本书的Id以及进度
-    const {bookId, schedule} = books[0]
-    //TODO 添加到进度记录表中
-    const date = tools.formatToday()
-    const records = await ScheduleRecord.findAll({
-      where: {
-        openId,
-        bookId,
-        date,
-        schedule
-      }
-    })
-    if (records.length===0) {
-      const scheduleRecord = await ScheduleRecord.create({
-        openId,
-        bookId,
-        schedule,
-        date,
-        createdAt: new Date().getTime()
-      })
+  const books = await UserBook.findAll({
+    where: {
+      openId
     }
-    console.log('offset', schedule*config.groupSize)
-    console.log('limit', config.groupSize)
-    const words = await BookVoc.findAll({
-      where: {
-        bookId
-      },
-      limit: config.groupSize,
-      offset: schedule*config.groupSize,
-      include: {
-        model: Voc,
-        as: 'vocInfo'
-      }
-    })
-    const arr = []
-    words.forEach(word => {
-      arr.push(word.vocInfo)
-    })
-    ctx.status = 200
-    ctx.body = {
-      success: true,
+  })
+  // 取出第一本书的Id以及进度
+  const {bookId, schedule} = books[0]
+  //TODO 添加到进度记录表中
+  const date = tools.formatToday()
+  const records = await ScheduleRecord.findAll({
+    where: {
+      openId,
       bookId,
-      data: arr
+      date,
+      schedule
     }
-  } else {
-    // 用户没有选择参考书
-    // 从单词库的50000个单词中随机取20个单词
-    const rand = Math.floor(Math.random()*2400)
-    const arr = await Voc.findAll({
-      limit: config.groupSize,
-      offset: rand*config.groupSize
+  })
+  if (records.length===0) {
+    const scheduleRecord = await ScheduleRecord.create({
+      openId,
+      bookId,
+      schedule,
+      date,
+      createdAt: new Date().getTime()
     })
-    ctx.status = 200
-    ctx.body = {
-      success: true,
-      data: arr
+  }
+  console.log('offset', schedule*config.groupSize)
+  console.log('limit', config.groupSize)
+  const words = await BookVoc.findAll({
+    where: {
+      bookId
+    },
+    limit: config.groupSize,
+    offset: schedule*config.groupSize,
+    include: {
+      model: Voc,
+      as: 'vocInfo'
     }
+  })
+  const arr = []
+  words.forEach(word => {
+    arr.push(word.vocInfo)
+  })
+  ctx.status = 200
+  ctx.body = {
+    success: true,
+    bookId,
+    data: arr
   }
 })
 

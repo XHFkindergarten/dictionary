@@ -191,6 +191,7 @@ router.get('/mycard', async ctx => {
     arr.push({
       voc: card.voc,
       img: card.img,
+      title: card.title,
       front: card.freeFront,
       back: card.freeBack,
       isFree: card.isFree,
