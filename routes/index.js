@@ -248,6 +248,29 @@ router.get('/punch', async ctx => {
   }
 })
 
+/**
+ * @router GET /updateCards
+ * @description 每一个小时更新一次所有卡片的状态
+ */
+router.get('/updateCards', async ctx => {
+  const j = NodeSchedule.scheduleJob('00 * * * *', async function() {
+    console.log('定期检查卡片状态')
+    const cards = await Card.findAll()
+    const time = new Date().getTime()
+    cards.forEach(card => {
+      if (card.remindAt < time) {
+        await card.update({
+          isOk: 0
+        })
+      }
+    })
+    ctx.status = 200
+    ctx.body = {
+      success: true
+    }
+  }
+})
+
 
 
 module.exports = router.routes()
