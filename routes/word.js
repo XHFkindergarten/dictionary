@@ -736,6 +736,35 @@ router.get('/deleteCard', async ctx => {
   }
 })
 
+/**
+ * @router POST /word/updateCard
+ * @description 更新某张卡片信息
+ * @params id
+ * @params img1
+ * @params img2
+ * @params rec1
+ * @params rec2
+ * @params freeFront
+ * @params freeBack
+ */
+router.post('/updateCard', async ctx => {
+  const params = ctx.request.body
+  const id = params.id
+  delete params.id
+  const card = await Card.findOne({
+    where: {
+      id
+    }
+  })
+  const update = await card.update({
+    params
+  })
+  ctx.status = 200
+  ctx.body = {
+    success: true,
+    msg: 'update card success'
+  }
+})
 
 
 module.exports = router.routes()
