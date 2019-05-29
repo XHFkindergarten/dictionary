@@ -748,22 +748,29 @@ router.get('/deleteCard', async ctx => {
  * @params freeBack
  */
 router.post('/updateCard', async ctx => {
-  const params = ctx.request.body
-  const id = params.id
-  delete params.id
-  const card = await Card.findOne({
-    where: {
-      id
+  const res = await sequelize.transaction(async t => {
+    const params = ctx.request.body
+    const id = params.id
+    delete params.id
+    const card = await Card.findOne({
+      where: {
+        id
+      }
+    })
+    const update = await card.update({
+      ...params
+    })
+    if (update) {
+      ctx.status = 200
+      ctx.body = {
+        success: true,
+        msg: 'update card success'
+      }
     }
+  }).catch(() => {
+    ctx.status = 400
   })
-  const update = await card.update({
-    ...params
-  })
-  ctx.status = 200
-  ctx.body = {
-    success: true,
-    msg: 'update card success'
-  }
+  
 })
 
 
