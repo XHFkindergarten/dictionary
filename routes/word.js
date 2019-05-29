@@ -757,7 +757,7 @@ router.post('/updateCard', async ctx => {
     }
   })
   const update = await card.update({
-    params
+    ...params
   })
   ctx.status = 200
   ctx.body = {
