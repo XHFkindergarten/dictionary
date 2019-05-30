@@ -755,11 +755,12 @@ router.post('/updateCard', async ctx => {
     const card = await Card.findOne({
       where: {
         id
-      }
+      },
+      t
     })
     const update = await card.update({
       ...params
-    })
+    }, t)
     if (update) {
       ctx.status = 200
       ctx.body = {
