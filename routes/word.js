@@ -198,6 +198,13 @@ router.get('/searchWord', async ctx => {
 router.get('/oneWord', async ctx => {
   const word = ctx.query.word
   const res = await axios.get('http://dict-co.iciba.com/api/dictionary.php?type=json&key=A3A8D4E818A2A0890BED5298B800C9EB&w='+word)
+  if (!res.data) {
+    ctx.status = 200
+    ctx.body = {
+      success:false
+    }
+    return
+  }
   const wordInfo = res.data
   // 获取例句
   const res1 = await axios.get('http://dict-co.iciba.com/api/dictionary.php?type=xml&key=A3A8D4E818A2A0890BED5298B800C9EB&w='+word)
@@ -769,6 +776,7 @@ router.post('/updateCard', async ctx => {
     }
     ctx.status = 400
 })
+
 
 
 module.exports = router.routes()

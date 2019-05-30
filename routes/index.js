@@ -2,6 +2,8 @@ const router = require('koa-router')()
 const User = require('../models/UserModel')
 const Word = require('../models/WordsModel')
 const Card = require('../models/CardModel')
+const Voc = require('../models/VocModel')
+const Dictionary = require('../models/DictionaryModel')
 const PunchRecord = require('../models/PunchRecordModel')
 const config = require('../config/default')
 const WXB = require('../utils/WXBizDataCrypt')
@@ -12,6 +14,8 @@ const qiniu = require('qiniu')
 // 引入定时组件
 const NodeSchedule = require('node-schedule')
 const tools = require('../utils/tools')
+// 引入xml处理包
+const fxp = require('fast-xml-parser')
 
 router.get('/', async (ctx, next) => {
   await ctx.render('index', {
@@ -271,6 +275,40 @@ router.get('/updateCards', async ctx => {
     ctx.body = {
       success: true
     }
+})
+
+/**
+ * @router GET /formatVocs
+ * @description 爬取所有单词表中的数据，从金山词霸API获取具体信息
+ * @params offset
+ * @params limit  默认1000
+ */
+router.get('/formatVocs', async ctx => {
+
+  const offset = ctx.query.offset || 0
+  const limit = ctx.query.limit || 10
+  const cards = await Voc.findAll({
+    offset,
+    limit
+  })
+  // const arr = []
+  let voc
+  let res, res1, xml2json, sentense
+  let means
+  let info
+  let createVoc
+  for (let i = 0; i < cards.length; i++) {
+    // 获取单词名称
+    voc = cards[i].vocabulary
+    res = await axios.get('https://www.xhfkindergarten.cn:4000/oneWord?word=' + voc)
+    arr.push(res.data)
+    
+    
+  }
+  ctx.status = 200
+  ctx.body = {
+    vocs: arr
+  }
 })
 
 
