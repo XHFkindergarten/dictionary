@@ -750,18 +750,16 @@ router.get('/deleteCard', async ctx => {
 router.post('/updateCard', async ctx => {
   const res = await sequelize.transaction(async t => {
     const params = ctx.request.body
-    console.log(params)
     const id = params.id
     delete params.id
     const card = await Card.findOne({
       where: {
         id
-      },
-      t
+      }
     })
     const update = await card.update({
       ...params
-    }, t)
+    })
     if (update) {
       ctx.status = 200
       ctx.body = {
