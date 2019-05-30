@@ -44,6 +44,10 @@ const Card = sequelize.define('card', {
   nextGap: {
     field: 'next_gap',
     type: Sequelize.INTEGER
+  },
+  randomSide: {
+    field: 'random_side',
+    type: Sequelize.INTEGER
   }
 },{
   // 不要擅自添加时间戳属性

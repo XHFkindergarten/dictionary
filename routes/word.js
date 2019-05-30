@@ -219,7 +219,7 @@ router.get('/oneWord', async ctx => {
  * @router POST /word/addCard
  * @description 添加个人卡片
  * @params openId 用户openid
- * @params isFree 是否是自定义卡片 0-自定义 1-单词卡片
+ * @params isFree 是否是自定义卡片 0-自定义 1-单词卡片 2-问题卡片
  * @params img 卡片图 可不传
  * @params img2 卡片图 可不传
  * @params freeFront 自定义卡片前置内容 可不传
