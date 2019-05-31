@@ -40,7 +40,7 @@ const Dictionary = sequelize.define('dictionary', {
     type: Sequelize.STRING(255)
   },
   phAm: {
-    field: 'voc_am',
+    field: 'ph_am',
     type: Sequelize.STRING(255)
   },
   phEn_mp3: {

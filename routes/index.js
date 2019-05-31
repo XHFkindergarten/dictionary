@@ -285,30 +285,64 @@ router.get('/updateCards', async ctx => {
  */
 router.get('/formatVocs', async ctx => {
 
-  const offset = ctx.query.offset || 0
-  const limit = ctx.query.limit || 10
+  const offset = ctx.query.offset || 42099
+  const limit = ctx.query.limit || 10000
   const cards = await Voc.findAll({
     offset,
     limit
   })
-  // const arr = []
+  const arr = []
   let voc
   let res, res1, xml2json, sentense
-  let means
   let info
   let createVoc
+  let explains
+  let means
   for (let i = 0; i < cards.length; i++) {
-    // 获取单词名称
-    voc = cards[i].vocabulary
-    res = await axios.get('https://www.xhfkindergarten.cn:4000/oneWord?word=' + voc)
-    arr.push(res.data)
-    
+    try {
+      console.log(`正在插入第${42099+i+1}个单词--${cards[i].vocabulary}`)
+      // 获取单词名称
+      voc = cards[i].vocabulary
+      res = await axios.get('https://www.xhfkindergarten.cn:4000/word/oneWord?word=' + voc)
+      // console.log(res.data.word)
+      if (!res.data.word.symbols[0].parts) {
+        means = ''
+      } else {
+        explains = res.data.word.symbols[0].parts.slice(0, 2)
+        means = ''
+        explains.forEach(part => {
+          part.means.unshift(part.part)
+          means += part.means.join('lzk2') + 'lzk1'
+        })
+        means = means.substring(0, means.length-4)
+      }
+      
+      info = {
+        vocName: res.data.word.word_name,
+        vocPl: res.data.word.exchange&&res.data.word.exchange.word_pl ? res.data.word.exchange.word_pl[0] : '',
+        vocThird: res.data.word.exchange&&res.data.word.exchange.word_third ? res.data.word.exchange.word_third[0] : '',
+        vocPast: res.data.word.exchange&&res.data.word.exchange.word_past ? res.data.word.exchange.word_past[0] : '',
+        vocDone: res.data.word.exchange&&res.data.word.exchange.word_done ? res.data.word.exchange.word_done[0] : '',
+        vocIng: res.data.word.exchange&&res.data.word.exchange.word_ing ? res.data.word.exchange.word_ing[0] : '',
+        vocEr: res.data.word.exchange&&res.data.word.exchange.word_er ? res.data.word.exchange.word_er[0] : '',
+        vocEst: res.data.word.exchange&&res.data.word.exchange.word_est ? res.data.word.exchange.word_est[0] : '',
+        phEn: res.data.word.symbols[0].ph_en,
+        phAm: res.data.word.symbols[0].ph_am,
+        phEn_mp3: res.data.word.symbols[0].ph_en_mp3,
+        phAm_mp3: res.data.word.symbols[0].ph_am_mp3,
+        means,
+        sent1: res.data.word.sentense.length>0 ? res.data.word.sentense[0].orig : '',
+        sent2: res.data.word.sentense.length>1 ? res.data.word.sentense[1].orig : '',
+        sent1Cn: res.data.word.sentense.length>0 ? res.data.word.sentense[0].trans : '',
+        sent2Cn: res.data.word.sentense.length>1 ? res.data.word.sentense[1].trans : '',
+      }
+      createVoc = await Dictionary.create(info)
+    } catch(err) {
+      console.log('err')
+    }
     
   }
   ctx.status = 200
-  ctx.body = {
-    vocs: arr
-  }
 })
 
 

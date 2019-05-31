@@ -28,6 +28,8 @@ const User = require('../models/UserModel')
 const Book = require('../models/BookModel')
 // 引入书-用户 Model
 const UserBook = require('../models/UserBookModel')
+// 引入辞典
+const Dictionary = require('../models/DictionaryModel')
 // 引入单词表
 const Voc = require('../models/VocModel')
 // 引入Card Model
@@ -197,28 +199,32 @@ router.get('/searchWord', async ctx => {
  */
 router.get('/oneWord', async ctx => {
   const word = ctx.query.word
-  const res = await axios.get('http://dict-co.iciba.com/api/dictionary.php?type=json&key=A3A8D4E818A2A0890BED5298B800C9EB&w='+word)
-  if (!res.data) {
-    ctx.status = 200
-    ctx.body = {
-      success:false
+
+  // =============调用自己的数据库==============
+  let voc = await Dictionary.findOne({
+    where: {
+      voc_name: word
     }
-    return
-  }
-  const wordInfo = res.data
-  // 获取例句
-  const res1 = await axios.get('http://dict-co.iciba.com/api/dictionary.php?type=xml&key=A3A8D4E818A2A0890BED5298B800C9EB&w='+word)
-  const xml2json = fxp.parse(res1.data)
-  const sentense = xml2json.dict.sent
-  // 例句只返回两条
-  if (sentense) {
-    wordInfo.sentense = sentense.slice(0,2)
-  }
-  const rand = Math.floor(Math.random()*wallpaper.length)
-  wordInfo.labelImg=wallpaper[rand]
+  })
+  // // 如果没有找到,调用金山api再找
+  // if (!voc) {
+  //   // ===========调用金山词霸API===========
+  //   const res = await axios.get('http://dict-co.iciba.com/api/dictionary.php?type=json&key=A3A8D4E818A2A0890BED5298B800C9EB&w='+word)
+  //   voc = res.data
+  //   // 获取例句
+  //   const res1 = await axios.get('http://dict-co.iciba.com/api/dictionary.php?type=xml&key=A3A8D4E818A2A0890BED5298B800C9EB&w='+word)
+  //   const xml2json = fxp.parse(res1.data)
+  //   const sentense = xml2json.dict.sent
+  //   // 例句只返回两条
+  //   if (sentense) {
+  //     voc.sentense = sentense.slice(0,2)
+  //   }
+  //   // ====================================
+  // }
+  // console.log(voc)
   ctx.body = {
     success: true,
-    word: wordInfo
+    word: voc
   }
 })
 
