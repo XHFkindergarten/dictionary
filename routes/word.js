@@ -175,9 +175,9 @@ router.post('/addBook', async ctx => {
  */
 router.get('/searchWord', async ctx => {
   const text = ctx.query.text
-  const words = await Words.findAll({
+  const words = await Voc.findAll({
     where: {
-      word: {
+      vocabulary: {
         [Op.like]: `${text}%`
       }
     },
