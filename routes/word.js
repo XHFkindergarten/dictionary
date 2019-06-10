@@ -337,12 +337,11 @@ router.post('/addCard', async ctx => {
  */
 router.get('/getMyTask', async ctx => {
   const openId = ctx.query.openId
-  const now = new Date().getTime()
   const cards = await Card.findAll({
     where: {
       openId,
       remindAt: {
-        $lte: now
+        [Op.lt]: new Date().getTime()
       }
     },
     // 根据更新时间降序查找，最新的卡片在上面
