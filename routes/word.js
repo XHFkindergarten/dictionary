@@ -641,7 +641,7 @@ router.get('/getTaskNum', async ctx => {
   const notOk = await Card.count({
     where: {
       openId,
-      updateAt: {
+      remindAt: {
         $lte: now
       },
     }
