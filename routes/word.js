@@ -13,8 +13,8 @@ const wallpaper = require('../config/wallpaper')
 const axios = require('axios')
 // 引入xml处理包
 const fxp = require('fast-xml-parser')
-// 引入定时组件
-const NodeSchedule = require('node-schedule')
+// // 引入定时组件
+// const NodeSchedule = require('node-schedule')
 
 // 引入sequelize
 const sequelize = require('../mysql/sequelize')
@@ -287,18 +287,18 @@ router.post('/addCard', async ctx => {
     // 由于是创建卡片，nextGap值自动为0(5分钟)
     const {timeSetting, remindAt} = tools.timeGapHandler(0)
     console.log(timeSetting)
-    const j = NodeSchedule.scheduleJob(timeSetting, async function(id) {
-      const now = new Date()
-      console.log('触发函数:'+now)
-      const thiscard = await Card.findOne({
-        where: {
-          id
-        }
-      })
-      await thiscard.update({
-        isOk: 0
-      }, t)
-    }.bind(null, createCard.id))
+    // const j = NodeSchedule.scheduleJob(timeSetting, async function(id) {
+    //   const now = new Date()
+    //   console.log('触发函数:'+now)
+    //   const thiscard = await Card.findOne({
+    //     where: {
+    //       id
+    //     }
+    //   })
+    //   await thiscard.update({
+    //     isOk: 0
+    //   }, t)
+    // }.bind(null, createCard.id))
 
     ctx.status = 200
     ctx.body = {
@@ -337,10 +337,13 @@ router.post('/addCard', async ctx => {
  */
 router.get('/getMyTask', async ctx => {
   const openId = ctx.query.openId
+  const now = new Date().getTime()
   const cards = await Card.findAll({
     where: {
       openId,
-      isOk: 0
+      remindAt: {
+        $lte: now
+      }
     },
     // 根据更新时间降序查找，最新的卡片在上面
     order: [
@@ -576,18 +579,18 @@ router.post('/updateTimeGap', async ctx => {
     }, t)
 
     
-    const j = NodeSchedule.scheduleJob(timeSetting, async function(id) {
-      const now = new Date()
-      console.log('触发函数:'+now)
-      const thiscard = await Card.findOne({
-        where: {
-          id
-        }
-      })
-      await thiscard.update({
-        isOk: 0
-      })
-    }.bind(null, id))
+    // const j = NodeSchedule.scheduleJob(timeSetting, async function(id) {
+    //   const now = new Date()
+    //   console.log('触发函数:'+now)
+    //   const thiscard = await Card.findOne({
+    //     where: {
+    //       id
+    //     }
+    //   })
+    //   await thiscard.update({
+    //     isOk: 0
+    //   })
+    // }.bind(null, id))
 
     // 在memory_record记录表中更新今天使用卡片的数量
     const openId = card.openId
@@ -634,10 +637,13 @@ router.get('/getTaskNum', async ctx => {
       openId
     }
   })
+  const now = new Date().getTime()
   const notOk = await Card.count({
     where: {
       openId,
-      isOk: 0
+      updateAt: {
+        $lte: now
+      },
     }
   })
   ctx.status = 200

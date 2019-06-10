@@ -11,8 +11,8 @@ const axios = require('axios')
 const sequelize = require('../mysql/sequelize')
 // 引入七牛云插件
 const qiniu = require('qiniu')
-// 引入定时组件
-const NodeSchedule = require('node-schedule')
+// // 引入定时组件
+// const NodeSchedule = require('node-schedule')
 const tools = require('../utils/tools')
 // 引入xml处理包
 const fxp = require('fast-xml-parser')
@@ -252,30 +252,30 @@ router.get('/punch', async ctx => {
   }
 })
 
-/**
- * @router GET /updateCards
- * @description 每一个小时更新一次所有卡片的状态
- */
-router.get('/updateCards', async ctx => {
-  console.log('?')
-  const j = NodeSchedule.scheduleJob('* 00 * * * *', async function() {
-    console.log('定期检查卡片状态')
-    const cards = await Card.findAll()
-    const time = new Date().getTime()
-    cards.forEach(async card => {
-      if (card.remindAt < time) {
-        await card.update({
-          isOk: 0
-        })
-      }
-    })
+// /**
+//  * @router GET /updateCards
+//  * @description 每一个小时更新一次所有卡片的状态
+//  */
+// router.get('/updateCards', async ctx => {
+//   console.log('?')
+//   const j = NodeSchedule.scheduleJob('* 00 * * * *', async function() {
+//     console.log('定期检查卡片状态')
+//     const cards = await Card.findAll()
+//     const time = new Date().getTime()
+//     cards.forEach(async card => {
+//       if (card.remindAt < time) {
+//         await card.update({
+//           isOk: 0
+//         })
+//       }
+//     })
     
-  })
-  ctx.status = 200
-    ctx.body = {
-      success: true
-    }
-})
+//   })
+//   ctx.status = 200
+//     ctx.body = {
+//       success: true
+//     }
+// })
 
 /**
  * @router GET /formatVocs
